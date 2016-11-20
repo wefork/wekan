@@ -60,6 +60,7 @@ Meteor.publish('archivedBoards', function() {
 
 Meteor.publishRelations('board', function(boardId) {
   check(boardId, String);
+  const userId = this.userId;
 
   this.cursor(Boards.find({
     _id: boardId,
@@ -103,8 +104,11 @@ Meteor.publishRelations('board', function(boardId) {
     // aren't members anymore but may have some activities attached to them in
     // the history.
     //
+    // We omit the current user because the client should already have that data,
+    // and sending it triggers a subtle bug:
+    // https://github.com/wefork/wekan/issues/15
     this.cursor(Users.find({
-      _id: { $in: _.pluck(board.members, 'userId') },
+      _id: { $in: _.chain(board.members).pluck('userId').without(userId).value() },
     }, { fields: {
       'username': 1,
       'profile.fullname': 1,
