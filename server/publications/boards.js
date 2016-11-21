@@ -60,7 +60,7 @@ Meteor.publish('archivedBoards', function() {
 
 Meteor.publishRelations('board', function(boardId) {
   check(boardId, String);
-  const userId = this.userId;
+  const thisUserId = this.userId;
 
   this.cursor(Boards.find({
     _id: boardId,
@@ -108,7 +108,7 @@ Meteor.publishRelations('board', function(boardId) {
     // and sending it triggers a subtle bug:
     // https://github.com/wefork/wekan/issues/15
     this.cursor(Users.find({
-      _id: { $in: _.chain(board.members).pluck('userId').without(userId).value() },
+      _id: { $in: _.chain(board.members).pluck('userId').without(thisUserId).value() },
     }, { fields: {
       'username': 1,
       'profile.fullname': 1,
@@ -117,6 +117,9 @@ Meteor.publishRelations('board', function(boardId) {
       // Presence indicators
       this.cursor(presences.find({ userId }));
     });
+
+    // We need to subscribe the user to their own presence indicator.
+    this.cursor(presences.find({ userId: thisUserId }));
   });
 
   return this.ready();
