@@ -118,8 +118,10 @@ Meteor.publishRelations('board', function(boardId) {
       this.cursor(presences.find({ userId }));
     });
 
-    // We need to subscribe the user to their own presence indicator.
-    this.cursor(presences.find({ userId: thisUserId }));
+    if (thisUserId) {
+      // We need to subscribe the user to their own presence indicator.
+      this.cursor(presences.find({ userId: thisUserId }));
+    }
   });
 
   return this.ready();
