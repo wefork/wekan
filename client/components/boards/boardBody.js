@@ -1,5 +1,15 @@
 const subManager = new SubsManager();
 
+// We clear the subscription manager on logout and login to work around
+// this bug: https://github.com/wefork/wekan/issues/15
+let currentUserId = null;
+Tracker.autorun(() => {
+  if (Meteor.userId() !== currentUserId) {
+    subManager.clear();
+    currentUserId = Meteor.userId();
+  }
+});
+
 BlazeComponent.extendComponent({
   onCreated() {
     this.draggingActive = new ReactiveVar(false);
